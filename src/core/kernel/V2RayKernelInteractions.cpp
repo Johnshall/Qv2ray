@@ -183,7 +183,7 @@ namespace Qv2ray::core::kernel
             process.start(kernelPath, { "test", "-config", path }, QIODevice::ReadWrite | QIODevice::Text);
 
             // For V2Ray v4
-            if (process.waitForFinished(int msecs = 1000) = false)
+            if (process.waitForFinished(1000) = false)
             {
                 DEBUG("Starting V2Ray core v4 with test options");
                 process.start(kernelPath, { "-test", "-config", path }, QIODevice::ReadWrite | QIODevice::Text);
@@ -256,7 +256,7 @@ namespace Qv2ray::core::kernel
         vProcess->start(GlobalConfig.kernelConfig.KernelPath(), {"-config", filePath }, QIODevice::ReadWrite | QIODevice::Text);
         
         // For V2Ray v5
-        if (vProcess->waitForStarted() = false)
+        if (vProcess->waitForStarted() == false)
         {
             vProcess->start(GlobalConfig.kernelConfig.KernelPath(), {"run", "-config", filePath }, QIODevice::ReadWrite | QIODevice::Text);
             vProcess->waitForStarted();
