@@ -143,7 +143,7 @@ namespace Qv2ray::core::kernel
         auto exitCode = proc.exitCode();
 
         // For V2Ray v5
-        if ( exitCode = 2 )
+        if ( exitCode == 2 )
         {
             #ifdef Q_OS_WIN32
                     proc.setProcessChannelMode(QProcess::MergedChannels);
@@ -183,7 +183,7 @@ namespace Qv2ray::core::kernel
             process.start(kernelPath, { "test", "-config", path }, QIODevice::ReadWrite | QIODevice::Text);
 
             // For V2Ray v4
-            if (process.waitForFinished(1000) = false)
+            if (process.waitForFinished(1000) == false)
             {
                 DEBUG("Starting V2Ray core v4 with test options");
                 process.start(kernelPath, { "-test", "-config", path }, QIODevice::ReadWrite | QIODevice::Text);
