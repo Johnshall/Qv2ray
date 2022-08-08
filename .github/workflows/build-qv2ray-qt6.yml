@@ -187,9 +187,9 @@ jobs:
           cp -fv /lib/x86_64-linux-gnu/libgcc_s.so.1 ./usr/optional/libgcc_s/
           cp -fv /usr/lib/x86_64-linux-gnu/{libssl.so.1.1,libcrypto.so.1.1} ./usr/lib/
           cd ..
-          wget https://github.com/probonopd/linuxdeployqt/releases/download/6/linuxdeployqt-6-x86_64.AppImage
-          chmod +x ./linuxdeployqt-6-x86_64.AppImage
-          ./linuxdeployqt-6-x86_64.AppImage AppDir/usr/share/applications/qv2ray.desktop \
+          wget https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage
+          chmod +x ./linuxdeployqt-continuous-x86_64.AppImage
+          ./linuxdeployqt-continuous-x86_64.AppImage AppDir/usr/share/applications/qv2ray.desktop \
             -unsupported-allow-new-glibc \
             -appimage \
             -no-strip \

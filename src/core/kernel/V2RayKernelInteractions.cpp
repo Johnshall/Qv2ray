@@ -128,28 +128,39 @@ namespace Qv2ray::core::kernel
         // Check if V2Ray core returns a version number correctly.
         QProcess proc;
 #ifdef Q_OS_WIN32
+        // For V2Ray v4
         // nativeArguments are required for Windows platform, without a
         // reason...
         proc.setProcessChannelMode(QProcess::MergedChannels);
         proc.setProgram(corePath);
-        proc.setNativeArguments("version");
+        proc.setNativeArguments("--version");
         proc.start();
 #else
-        proc.start(corePath, { "version" });
+        proc.start(corePath, { "--version" });
 #endif
         proc.waitForStarted();
         proc.waitForFinished();
         auto exitCode = proc.exitCode();
 
-        if (exitCode != 0)
-            return { false, tr("V2Ray core failed with an exit code: ") + QSTRN(exitCode) };
+        // For V2Ray v5
+        if ( exitCode == 2 )
+        {
+            #ifdef Q_OS_WIN32
+                    proc.setProcessChannelMode(QProcess::MergedChannels);
+                    proc.setProgram(corePath);
+                    proc.setNativeArguments("version");
+                    proc.start();
+                #else
+                    proc.start(corePath, { "version" });
+                #endif
+                    proc.waitForStarted();
+                    proc.waitForFinished();
+        }
 
         const auto output = proc.readAllStandardOutput();
         LOG("V2Ray output: " + SplitLines(output).join(";"));
-
         if (SplitLines(output).isEmpty())
             return { false, tr("V2Ray core returns empty string.") };
-
         return { true, SplitLines(output).at(0) };
     }
 
@@ -164,13 +175,22 @@ namespace Qv2ray::core::kernel
             auto env = QProcessEnvironment::systemEnvironment();
             env.insert("v2ray.location.asset", assetsPath);
             env.insert("XRAY_LOCATION_ASSET", assetsPath);
-            //
+            
+            // For V2Ray v5
             QProcess process;
             process.setProcessEnvironment(env);
-            DEBUG("Starting V2Ray core with test options");
+            DEBUG("Starting V2Ray core v5 with test options");
             process.start(kernelPath, { "test", "-config", path }, QIODevice::ReadWrite | QIODevice::Text);
-            process.waitForFinished();
 
+            // For V2Ray v4
+            if (process.waitForFinished(1000) == false)
+            {
+                DEBUG("Starting V2Ray core v4 with test options");
+                process.start(kernelPath, { "-test", "-config", path }, QIODevice::ReadWrite | QIODevice::Text);
+                process.waitForFinished();
+            }
+
+            // For wrong configuration
             if (process.exitCode() != 0)
             {
                 QString output = QString(process.readAllStandardOutput());
@@ -232,8 +252,15 @@ namespace Qv2ray::core::kernel
         env.insert("v2ray.location.asset", GlobalConfig.kernelConfig.AssetsPath());
         env.insert("XRAY_LOCATION_ASSET", GlobalConfig.kernelConfig.AssetsPath());
         vProcess->setProcessEnvironment(env);
-        vProcess->start(GlobalConfig.kernelConfig.KernelPath(), {"run", "-config", filePath }, QIODevice::ReadWrite | QIODevice::Text);
-        vProcess->waitForStarted();
+        // For V2Ray v4
+        vProcess->start(GlobalConfig.kernelConfig.KernelPath(), {"-config", filePath }, QIODevice::ReadWrite | QIODevice::Text);
+        
+        // For V2Ray v5
+        if (vProcess->waitForStarted() == false)
+        {
+            vProcess->start(GlobalConfig.kernelConfig.KernelPath(), {"run", "-config", filePath }, QIODevice::ReadWrite | QIODevice::Text);
+            vProcess->waitForStarted();
+        }
         kernelStarted = true;
 
         QMap<bool, QMap<QString, QString>> tagProtocolMap;
